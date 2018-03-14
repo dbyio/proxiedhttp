@@ -10,20 +10,19 @@ import (
     "github.com/dbyio/proxiedhttp"
 )
 
-func main() {
+// A slice of authorized IP addresses to read the proxy protocol header from
+// nil means any (not recommanded)
+proxySources := []net.IP{net.ParseIP("127.0.0.1")}
 
-    listen, err := net.Listen("tcp", "127.0.0.1:8000")
+// connexion read timeout
+readTimeout := 5 * time.Second
 
-    // A slice of authorized IP addresses to read the proxy protocol header from
-    // nil means any (not recommanded)
-    proxySources := []net.IP{net.ParseIP("127.0.0.1")}
-
-	pListen := &proxiedhttp.Listener{
-		Listener:    listen,
-		ReadTimeout: 5 * time.Second,   // read time out
-		AuthSources: proxySources,      
-    }
-    
-    log.Fatal(http.Serve(pListen, http.DefaultServeMux))
+listen, _ := net.Listen("tcp", "127.0.0.1:8000")
+pListen := &proxiedhttp.Listener{
+	Listener:    listen,
+	ReadTimeout: readTimeout,
+	AuthSources: proxySources,      
 }
+
+http.Serve(pListen, http.DefaultServeMux)
 ```
